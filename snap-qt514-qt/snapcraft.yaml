@@ -27,16 +27,15 @@ apps:
   snapqt5:
     adapter: full
     #command: bin/snapcraft-preload $SNAP/opt/qt514/bin/snapqt5
-    command: desktop-launch $SNAP/usr/bin/snapqt5
+    command: $SNAP/usr/bin/snapqt5
+    command-chain: 
+      - bin/desktop-launch
     desktop: usr/share/application/snapqt5.desktop
     environment:
       LD_LIBRARY_PATH: $SNAP/opt/qt514/lib/x86_64-linux-gnu/:$SNAP/opt/qt514/lib/:$LD_LIBRARY_PATH:$SNAP/usr/lib/
-      QT_QPA_PLATFORM: xcb
       QT_BASE_DIR: $SNAP/opt/qt514/
       QT_PLUGIN_PATH: $SNAP/opt/qt514/plugins/
       QML2_IMPORT_PATH: $SNAP/opt/qt514/qml/
-      XDG_DATA_DIRS: $SNAP/usr/share:$XDG_DATA_DIRS
-      QT_QPA_PLATFORMTHEME: gtk3
     plugs: # https://snapcraft.io/docs/supported-interfaces
 #input - output
       - x11 #monitor mouse/keyboard input
@@ -59,26 +58,34 @@ apps:
     #extensions: [gnome-3-28]
 
 parts:
-  
-  #snapcraft-preload:
-  #  source: https://github.com/sergiusens/snapcraft-preload.git
-  #  plugin: cmake
-  #  build-packages:
-  #    - on amd64:
-  #      - gcc-multilib
-  #      - g++-multilib
-
-  #glib-only:
-  #  source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
-  #  plugin: make
-  #  build-packages:
-  #    - libglib2.0-dev
-  #  stage-packages:
-  #    - libglib2.0-bin
-
+  desktop-qt5:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: qt
+    plugin: make
+    make-parameters: ["FLAVOR=qt5"]
+    build-packages:
+      - build-essential
+      - qtbase5-dev
+      - dpkg-dev
+    stage-packages:
+      - libxkbcommon0
+      - ttf-ubuntu-font-family
+      - dmz-cursor-theme
+      - light-themes
+      - adwaita-icon-theme
+      - gnome-themes-standard
+      - shared-mime-info
+      - libqt5gui5
+      - libgdk-pixbuf2.0-0
+      - libqt5svg5 # for loading icon themes which are svg
+      - try: [appmenu-qt5] # not available on core18
+      - locales-all
+      - xdg-user-dirs
+      - fcitx-frontend-qt5
+      
   ppa-qt:
     after:
-      - desktop-glib-only
+      - desktop-qt5
     plugin: nil
     build-packages:
       - software-properties-common
@@ -86,9 +93,8 @@ parts:
       add-apt-repository -y ppa:beineri/opt-qt-5.14.1-bionic
       apt-get -qq update
       apt-get install -y qt514-meta-minimal
-      
+
   snapqt5:
-    disable-parallel: true
     after: 
       - ppa-qt
     source: https://github.com/jdelromano/snapqt5.git

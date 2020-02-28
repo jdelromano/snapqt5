@@ -31,14 +31,9 @@ apps:
     command-chain: 
       - bin/desktop-launch
     desktop: usr/share/application/snapqt5.desktop
-    environment:
-      LD_LIBRARY_PATH: $SNAP/opt/qt514/lib/x86_64-linux-gnu/:$SNAP/opt/qt514/lib/:$LD_LIBRARY_PATH:$SNAP/usr/lib/
-      QT_QPA_PLATFORM: xcb
-      QT_BASE_DIR: $SNAP/opt/qt514/
-      QT_PLUGIN_PATH: $SNAP/opt/qt514/plugins/
-      QML2_IMPORT_PATH: $SNAP/opt/qt514/qml/
-      XDG_DATA_DIRS: $SNAP/usr/share:$XDG_DATA_DIRS
-      QT_QPA_PLATFORMTHEME: gtk3
+    #environment:
+      #QT_QPA_PLATFORM: xcb
+      #QT_QPA_PLATFORMTHEME: gtk3
     plugs: # https://snapcraft.io/docs/supported-interfaces
 #input - output
       - x11 #monitor mouse/keyboard input
