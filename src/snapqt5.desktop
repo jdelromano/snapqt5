@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=snapqt5
+Version=1.0
+Exec=snapqt5.snapqt5 QT_DEBUG_PLUGINS=1
+Type=Application
+Terminal=false
+Name[en_US]=snapqt5.desktop
