@@ -1,0 +1,119 @@
+name: snapqt5
+summary: App to test snapcraft with recent versions of QT
+description: It simply build a dummy app with some commands using the latest Qt libraries
+confinement: strict
+base: core18
+grade: stable
+version: 1.0.0
+
+architectures:
+  - build-on: amd64
+
+plugs: # plugs for theming, font settings, cursor and to use gtk3 file chooser
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes:gtk-3-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes:icon-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes:sounds-themes
+
+apps:
+  snapqt5:
+    adapter: full
+    #command: bin/snapcraft-preload $SNAP/opt/qt514/bin/snapqt5
+    command: desktop-launch $SNAP/usr/bin/snapqt5
+    desktop: usr/share/application/snapqt5.desktop
+    environment:
+      LD_LIBRARY_PATH: $SNAP/opt/qt514/lib/x86_64-linux-gnu/:$SNAP/opt/qt514/lib/:$LD_LIBRARY_PATH:$SNAP/usr/lib/
+      QT_QPA_PLATFORM: xcb
+      QT_BASE_DIR: $SNAP/opt/qt514/
+      QT_PLUGIN_PATH: $SNAP/opt/qt514/plugins/
+      QML2_IMPORT_PATH: $SNAP/opt/qt514/qml/
+      XDG_DATA_DIRS: $SNAP/usr/share:$XDG_DATA_DIRS
+      QT_QPA_PLATFORMTHEME: gtk3
+    plugs: # https://snapcraft.io/docs/supported-interfaces
+#input - output
+      - x11 #monitor mouse/keyboard input
+      - unity7 #access legacy desktop resources 
+      - wayland #access compositors providing the Wayland protocol
+      - desktop #provides access to common desktop elements
+      - desktop-legacy #enables the use of legacy desktop methods
+#access to hardware
+      - opengl #access OpenGL hardware
+      - optical-drive #read/write access to CD/DVD drives
+      - removable-media #read/write files on removable storage devices
+#networking
+      - network #enables network access
+      - network-bind #operate as a network service
+#settings and files
+      - cups-control #print documents
+      - gsettings #access to any GSettings item for current user
+      - home #access non-hidden files in the home directory
+      - cifs-mount #access to smb and nfs file system
+    #extensions: [gnome-3-28]
+
+parts:
+  
+  #snapcraft-preload:
+  #  source: https://github.com/sergiusens/snapcraft-preload.git
+  #  plugin: cmake
+  #  build-packages:
+  #    - on amd64:
+  #      - gcc-multilib
+  #      - g++-multilib
+
+  #glib-only:
+  #  source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+  #  plugin: make
+  #  build-packages:
+  #    - libglib2.0-dev
+  #  stage-packages:
+  #    - libglib2.0-bin
+
+  ppa-qt:
+    after:
+      - desktop-glib-only
+    plugin: nil
+    build-packages:
+      - software-properties-common
+    override-pull: |
+      add-apt-repository -y ppa:beineri/opt-qt-5.14.1-bionic
+      apt-get -qq update
+      apt-get install -y qt514-meta-minimal
+      
+  snapqt5:
+    disable-parallel: true
+    after: 
+      - ppa-qt
+    source: https://github.com/jdelromano/snapqt5.git
+    plugin: nil
+    stage-packages:
+      - qt514-meta-minimal
+      - qt5-gtk-platformtheme
+      - libpng16-16
+    build-packages:
+      - build-essential
+    build-environment:
+      - QT_BASE_DIR: /opt/qt514
+      - QT_DIR: /opt/qt514
+      - LD_LIBRARY_PATH: $QT_BASE_DIR/lib/x86_64-linux-gnu:$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
+      - PKG_CONFIG_PATH: $QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
+      - PATH: $QT_BASE_DIR/bin:$PATH
+      #- INSTALL_ROOT: $SNAPCRAFT_PART_INSTALL
+    #override-pull: |
+    #  snapcraftctl pull
+    override-build: |
+      /opt/qt514/bin/qmake src/snapqt5.pro
+      make
+      mkdir -p ${SNAPCRAFT_PART_INSTALL}/usr/share/application
+      cp src/snapqt5.desktop ${SNAPCRAFT_PART_INSTALL}/usr/share/application
+      cp ${SNAPCRAFT_PART_BUILD}/snapqt5 ${SNAPCRAFT_PART_INSTALL}/usr/bin
+      chmod +x ${SNAPCRAFT_PART_INSTALL}/usr/bin/snapqt5
+      snapcraftctl build
+    
