@@ -33,9 +33,12 @@ MainWindow::MainWindow(QWidget *parent)
         ui->label->setText(command.toLatin1() + " -> res= " + QString::number(res));
     });
 
-    connect(ui->btnGoogle, &QPushButton::clicked, [](){
+    connect(ui->btnGoogle, &QPushButton::clicked, [this](){
         QUrl google("http://www.google.com");
-        QDesktopServices::openUrl(google);
+        if(QDesktopServices::openUrl(google))
+            ui->label->setText("opening http://www.google.com -> ok");
+        else
+            ui->label->setText("opening http://www.google.com -> fail");
     });
 }
 
