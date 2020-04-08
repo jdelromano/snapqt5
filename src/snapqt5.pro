@@ -17,4 +17,3 @@ TARGET = snapqt5
 
 
 OTHER_FILES += snapqt5.desktop
-
